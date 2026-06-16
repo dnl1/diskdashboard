@@ -17,6 +17,7 @@
     #smart-modal-body::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; border: 2px solid #1f2937; }
     #smart-modal-body::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
     #smart-modal-body { scrollbar-width: thin; scrollbar-color: #6b7280 #1f2937; }
+    #toast.show { transform: translateY(0); opacity: 1; }
   </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
@@ -70,6 +71,19 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden max-w-md bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 transition-all duration-300 translate-y-4 opacity-0">
+    <div class="flex items-start gap-3">
+      <div id="toast-icon" class="flex-shrink-0 w-5 h-5 mt-0.5"></div>
+      <div class="flex-1 min-w-0">
+        <p id="toast-message" class="text-sm text-gray-200 leading-relaxed"></p>
+        <div id="toast-details" class="mt-2 max-h-32 overflow-y-auto text-xs text-gray-400 space-y-1 hidden"></div>
+      </div>
+      <button onclick="hideToast()" class="flex-shrink-0 text-gray-500 hover:text-gray-300 p-0.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
   </div>
 
   <div id="smart-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-overlay p-4">
@@ -320,6 +334,36 @@
       });
     }
 
+    function showToast(msg, type, details) {
+      const el = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const msgEl = document.getElementById('toast-message');
+      const detailsEl = document.getElementById('toast-details');
+      msgEl.textContent = msg;
+      if (details && details.length) {
+        detailsEl.innerHTML = details.map(d =>
+          '<div class="truncate">' + d.replace(/</g, '&lt;') + '</div>'
+        ).join('');
+        detailsEl.classList.remove('hidden');
+      } else {
+        detailsEl.classList.add('hidden');
+      }
+      icon.innerHTML = type === 'error'
+        ? '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        : '<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+      el.className = 'fixed bottom-6 right-6 z-50 max-w-md bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 transition-all duration-300 translate-y-4 opacity-0';
+      el.classList.remove('hidden');
+      requestAnimationFrame(() => el.classList.add('show'));
+      clearTimeout(el._timeout);
+      el._timeout = setTimeout(hideToast, 5000);
+    }
+
+    function hideToast() {
+      const el = document.getElementById('toast');
+      el.classList.remove('show');
+      el.classList.add('hidden');
+    }
+
     async function loadFiles() {
       selectedPaths.clear();
       const el = document.getElementById('files-container');
@@ -474,11 +518,13 @@
         const succeeded = results.filter(r => r.success).length;
         const failed = results.filter(r => !r.success);
         if (failed.length > 0) {
-          const msg = failed.map(r => r.path + ': ' + r.error).join('\n');
-          alert('Deleted ' + succeeded + ' file(s). ' + failed.length + ' failed:\n' + msg);
+          const details = failed.map(r => r.path + ' — ' + r.error);
+          showToast(succeeded + ' deleted, ' + failed.length + ' failed', 'error', details);
+        } else {
+          showToast(succeeded + ' file(s) deleted successfully', 'success');
         }
       } catch(e) {
-        alert('Error deleting files: ' + e.message);
+        showToast('Error deleting files: ' + e.message, 'error');
         closeDeleteModal();
       } finally {
         btn.disabled = false;
