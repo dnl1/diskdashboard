@@ -379,6 +379,8 @@
       } catch(e) {
         if (!filesLoaded) {
           el.innerHTML = `<div class="text-center text-red-400 py-8">Error loading files</div>`;
+        } else {
+          showToast('Failed to reload files: ' + e.message, 'error');
         }
       }
     }
@@ -514,6 +516,7 @@
         closeDeleteModal();
         clearSelection();
         loadFiles();
+        loadDisks();
 
         const succeeded = results.filter(r => r.success).length;
         const failed = results.filter(r => !r.success);
