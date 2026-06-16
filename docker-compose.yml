@@ -1,0 +1,17 @@
+services:
+  diskdashboard:
+    build: .
+    container_name: diskdashboard
+    ports:
+      - "3005:3000"
+    pid: host
+    privileged: true
+    volumes:
+      # Mount host root so the app can discover all mounts automatically
+      - /:/host/root:ro
+      # Required for SMART monitoring
+      - /dev:/dev:ro
+    environment:
+      - HOST_ROOT=/host/root
+      - PORT=3000
+    restart: unless-stopped
