@@ -483,7 +483,7 @@ func getDisks() ([]DiskInfo, error) {
 		if strings.HasPrefix(device, "/dev/loop") {
 			continue
 		}
-		if strings.HasPrefix(fsType, "fuse") || fsType == "tmpfs" || fsType == "devpts" || fsType == "proc" || fsType == "sysfs" || fsType == "cgroup" || fsType == "cgroup2" || fsType == "devtmpfs" || fsType == "pstore" || fsType == "securityfs" || fsType == "efivarfs" || fsType == "autofs" || fsType == "mqueue" || fsType == "debugfs" || fsType == "tracefs" || fsType == "hugetlbfs" || fsType == "configfs" || fsType == "bpf" || fsType == "none" {
+		if strings.HasPrefix(fsType, "fuse") || fsType == "tmpfs" || fsType == "devpts" || fsType == "proc" || fsType == "sysfs" || fsType == "cgroup" || fsType == "cgroup2" || fsType == "devtmpfs" || fsType == "pstore" || fsType == "securityfs" || fsType == "efivarfs" || fsType == "autofs" || fsType == "mqueue" || fsType == "debugfs" || fsType == "tracefs" || fsType == "hugetlbfs" || fsType == "configfs" || fsType == "bpf" || fsType == "none" || fsType == "overlay" || fsType == "squashfs" {
 			continue
 		}
 		if seen[mountPoint] {
